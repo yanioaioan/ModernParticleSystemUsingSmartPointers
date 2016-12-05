@@ -108,19 +108,19 @@ int main(int argc, char *argv[])
 
 
 
-     std::vector<Particle*> monitorPool;
+     std::vector<std::shared_ptr<Particle>> monitorPool;
      monitorPool.reserve(5);//save invalidation of referencesToPool because of reallocation on monitorPool vecotr
 
      // pointer to particle pointer..or the address of a particle pointer in the container
      //
-     std::vector<Particle*> referencesToPool;
+     std::vector<std::shared_ptr<Particle>> referencesToPool;
      referencesToPool.resize(5);
 
 
      for (int i=0; i<5; ++i)
      {
-       Particle* a = new Particle(i);
-       monitorPool.push_back(a);
+       std::unique_ptr<Particle> a(new Particle(i));
+       monitorPool.push_back(std::move(a));
 
        referencesToPool[i]=monitorPool[i];
 
@@ -134,14 +134,14 @@ int main(int argc, char *argv[])
      int saveRemoveIndex=2;
 
      //DELETE THE 3rd ELEMENT FROM ORIGINAL VECTOR
-     std::vector<Particle*>::iterator it; it=monitorPool.begin();
+     std::vector<std::shared_ptr<Particle>>::iterator it; it=monitorPool.begin();
      monitorPool.erase(it+saveRemoveIndex);
      indexToRemovedFromreferenesToPoolVector.push_back(saveRemoveIndex);
 
 
      //UPDATE VECTOR "reference to original" vector based on saved "indices to be removed"
 
-     std::vector<Particle*>::iterator it2; it2=referencesToPool.begin();
+     std::vector<std::shared_ptr<Particle>>::iterator it2; it2=referencesToPool.begin();
      for(const auto &el:indexToRemovedFromreferenesToPoolVector)
      {
         referencesToPool.erase(it2+el);
