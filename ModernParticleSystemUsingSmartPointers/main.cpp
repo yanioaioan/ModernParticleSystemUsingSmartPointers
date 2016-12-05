@@ -2,6 +2,7 @@
 #include <memory>
 #include <vector>
 
+#include <list>
 
 class Particle
 {
@@ -38,6 +39,7 @@ class Particle
 int main(int argc, char *argv[])
 {
     std::vector<std::shared_ptr<Particle> > vectorOfParticles;
+   vectorOfParticles.reserve(15);
 
     for(int i =0;i<10;i++)
     {
@@ -63,27 +65,27 @@ int main(int argc, char *argv[])
 
 
      //iterator over vectorPArticles
-     std::vector<std::shared_ptr<Particle>>::iterator itVectorOfParticles=vectorOfParticles.begin();
-     for (std::vector<std::shared_ptr<Particle>>::iterator it=neighboursPointers.begin();it!=neighboursPointers.end();it++)
-     {
-         int id = (*it)->id;
-         itVectorOfParticles = find (vectorOfParticles.begin(),vectorOfParticles.end(),
-                                     [id](Particle const& n){
-                                         return n.id == id;
-                                     }
+//     std::vector<std::shared_ptr<Particle>>::iterator itVectorOfParticles=vectorOfParticles.begin();
+//     for (std::vector<std::shared_ptr<Particle>>::iterator it=neighboursPointers.begin();it!=neighboursPointers.end();it++)
+//     {
+//         int id = (*it)->id;
+//         itVectorOfParticles = find (vectorOfParticles.begin(),vectorOfParticles.end(),
+//                                     [id](Particle const& n){
+//                                         return n.id == id;
+//                                     }
 
-                                    );
+//                                    );
 
-         if(itVectorOfParticles!= vectorOfParticles.end())//neighboursPointer *it still there in vectorOfParticles
-         {
+//         if(itVectorOfParticles!= vectorOfParticles.end())//neighboursPointer *it still there in vectorOfParticles
+//         {
 
-         }
-         else
-         {
-             //neighboursPointer *it removed from vectorOfParticles , so we need to delete it from neighboursPointer too
+//         }
+//         else
+//         {
+//             //neighboursPointer *it removed from vectorOfParticles , so we need to delete it from neighboursPointer too
 
-         }
-     }
+//         }
+//     }
 
 
 
@@ -105,7 +107,48 @@ int main(int argc, char *argv[])
 
 
 
-    std::cout << "Hello World!" << std::endl;
+
+     std::vector<Particle*> monitorPool;
+     monitorPool.reserve(5);//save invalidation of referencesToPool because of reallocation on monitorPool vecotr
+
+     // pointer to particle pointer..or the address of a particle pointer in the container
+     //
+     std::vector<Particle*> referencesToPool;
+     referencesToPool.resize(5);
+
+
+     for (int i=0; i<5; ++i)
+     {
+       Particle* a = new Particle(i);
+       monitorPool.push_back(a);
+
+       referencesToPool[i]=monitorPool[i];
+
+     }
+
+
+     //save a list with removed indices to use and remove elements in referencesToPool
+     std::vector<int>indexToRemovedFromreferenesToPoolVector;
+
+     //Calculate which element to delete
+     int saveRemoveIndex=2;
+
+     //DELETE THE 3rd ELEMENT FROM ORIGINAL VECTOR
+     std::vector<Particle*>::iterator it; it=monitorPool.begin();
+     monitorPool.erase(it+saveRemoveIndex);
+     indexToRemovedFromreferenesToPoolVector.push_back(saveRemoveIndex);
+
+
+     //UPDATE VECTOR "reference to original" vector based on saved "indices to be removed"
+
+     std::vector<Particle*>::iterator it2; it2=referencesToPool.begin();
+     for(const auto &el:indexToRemovedFromreferenesToPoolVector)
+     {
+        referencesToPool.erase(it2+el);
+     }
+
+
+
     return 0;
 }
 
