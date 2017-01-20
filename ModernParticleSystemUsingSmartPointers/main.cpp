@@ -2,7 +2,13 @@
 #include <memory>
 #include <vector>
 
-#include <list>
+/*
+ * This class shows how 2 vector containers could be "synchronized".
+ * Practically, the monitoredPool vector of shared_ptr is monitored
+ * by referencesToPool.
+ * When an index is about to be removed from monitoredPool, then we save this index and
+ * "update/remove" the corresponding index from referencesToPool too.
+*/
 
 class Particle
 {
@@ -38,8 +44,8 @@ class Particle
 
 int main(int argc, char *argv[])
 {
-     std::vector<std::shared_ptr<Particle>> monitorPool;
-     monitorPool.reserve(5);//save invalidation of referencesToPool because of reallocation on monitorPool vecotr
+     std::vector<std::shared_ptr<Particle>> monitoredPool;
+     monitoredPool.reserve(5);//save invalidation of referencesToPool because of reallocation on monitoredPool vector
 
      // pointer to particle pointer..or the address of a particle pointer in the container
      //
@@ -50,9 +56,9 @@ int main(int argc, char *argv[])
      for (int i=0; i<5; ++i)
      {
        std::unique_ptr<Particle> a(new Particle(i));
-       monitorPool.push_back(std::move(a));
+       monitoredPool.push_back(std::move(a));
 
-       referencesToPool[i]=monitorPool[i];
+       referencesToPool[i]=monitoredPool[i];
 
      }
 
@@ -64,8 +70,8 @@ int main(int argc, char *argv[])
      int saveRemoveIndex=2;
 
      //DELETE THE 3rd ELEMENT FROM ORIGINAL VECTOR
-     std::vector<std::shared_ptr<Particle>>::iterator it; it=monitorPool.begin();
-     monitorPool.erase(it+saveRemoveIndex);
+     std::vector<std::shared_ptr<Particle>>::iterator it; it=monitoredPool.begin();
+     monitoredPool.erase(it+saveRemoveIndex);
      indexToRemovedFromreferenesToPoolVector.push_back(saveRemoveIndex);
 
 
